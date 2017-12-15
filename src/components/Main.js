@@ -48,14 +48,14 @@ var ImgFigure = React.createClass({
     }
     //如果图片的旋转角度有值并且不为0，添加旋转角度
     if(this.props.arrange.rotate){
-      (['-moz-','-ms-','-webkit-','']).forEach(function(value){
-        styleObj[value + 'transform'] = 'rotate(' + this.props.arrange.rotate + 'deg)';
+      (['MozTransform','MsTransform','WebkitTransform','transform']).forEach(function(value){
+        styleObj[value] = 'rotate(' + this.props.arrange.rotate + 'deg)';
       }.bind(this));
     }
     if (this.props.arrange.isCenter) {
       styleObj.zIndex = 11;
     }
-    var imgFigureClassName = "img-figure";
+    var imgFigureClassName = 'img-figure';
         imgFigureClassName += this.props.arrange.isInverse ? ' is-inverse': '';
     return (
       <figure className={imgFigureClassName} style={styleObj} ref="figure" onClick={this.handleClick}>
@@ -70,6 +70,34 @@ var ImgFigure = React.createClass({
         </figcaption>
       </figure>
     )
+  }
+});
+
+//控制组件
+var ControllerUnit = React.createClass({
+  handleClick: function (e) {
+    //如果点击的是当前选中态的按钮，则翻转图片，否则对应的图片居中
+    if (this.props.arrange.isCenter) {
+      this.props.inverse();
+    } else {
+      this.props.center();
+    }
+    e.stopPropagation();
+    e.preventDefault();
+  },
+  render: function () {
+    var controllerUnitClassName = 'controller-unit';
+    //如果对应的是居中的图片，显示控制按钮的居中态
+    if (this.props.arrange.isCenter) {
+      controllerUnitClassName += ' is-center';
+      //如果同时对应的是翻转的图片，显示控制按钮的翻转态
+      if (this.props.arrange.isInverse) {
+        controllerUnitClassName += ' is-inverse';
+      }
+    }
+    return (
+      <span className={controllerUnitClassName} onClick={this.handleClick}></span>
+    );
   }
 });
 
@@ -139,7 +167,7 @@ class AppComponent extends React.Component {
         vPosRangeTopY = vPosRange.topY,
         vPosRangeX = vPosRange.x,
         imgsArrangeTopArr = [],
-        topImgNum = Math.ceil(Math.random()*2),//取一个或者不取
+        topImgNum = Math.floor(Math.random()*2),//取一个或者不取
         topImgSpliceIndex = 0,
         imgsArrangeCenterArr = imgsArrangeArr.splice(centerIndex, 1);
         //首先居中centerIndex的图片,居中图片不旋转
@@ -251,7 +279,8 @@ class AppComponent extends React.Component {
           isCenter: false
         }
       }
-      imgFigures.push(<ImgFigure data={value} ref={'imgFigure' + index} arrange={this.state.imgsArrangeArr[index]} inverse={this.inverse(index)} center={this.center(index)}/>)
+      imgFigures.push(<ImgFigure key={index} data={value} ref={'imgFigure' + index} arrange={this.state.imgsArrangeArr[index]} inverse={this.inverse(index)} center={this.center(index)}/>)
+      controllerUnits.push(<ControllerUnit arrange={this.state.imgsArrangeArr[index]} inverse={this.inverse(index)} center={this.center(index)}/>)
     }.bind(this));
     return (
       <section className="stage" ref="stage">
